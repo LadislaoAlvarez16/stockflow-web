@@ -61,3 +61,10 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Funciones del Dashboard
+export const dashboardApi = {
+  getSummary: () => api.get('/dashboard/summary').then(res => res.data),
+  getRecentMovements: () => api.get('/dashboard/movements/recent').then(res => res.data),
+  getLowStock: () => api.get('/dashboard/low-stock').then(res => res.data),
+};

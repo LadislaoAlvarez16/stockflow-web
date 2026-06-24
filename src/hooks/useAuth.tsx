@@ -5,13 +5,13 @@ import { api } from '@/services/api';
 export interface User {
   id: string;
   email: string;
-  username: string;
+  name: string;
   role: 'ADMIN' | 'OPERATOR' | 'VIEWER';
 }
 
 interface LoginCredentials {
   email?: string;
-  username?: string;
+  name?: string;
   password?: string;
 }
 
