@@ -6,9 +6,9 @@ import { Login } from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 import { Toaster } from '@/components/ui/toaster';
 
-const Stock = () => <div className="p-8"><h1 className="text-2xl font-bold">Stock</h1></div>;
-const Movements = () => <div className="p-8"><h1 className="text-2xl font-bold">Movements</h1></div>;
-const Alerts = () => <div className="p-8"><h1 className="text-2xl font-bold">Alerts</h1></div>;
+import Stock from '@/pages/Stock';
+import Movements from '@/pages/Movements';
+import Alerts from '@/pages/Alerts';
 
 function App() {
   return (

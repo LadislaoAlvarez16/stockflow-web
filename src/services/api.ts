@@ -68,3 +68,23 @@ export const dashboardApi = {
   getRecentMovements: () => api.get('/dashboard/movements/recent').then(res => res.data),
   getLowStock: () => api.get('/dashboard/low-stock').then(res => res.data),
 };
+
+export const stockApi = {
+  getStocks: (params?: any) => api.get('/stock', { params }).then(res => res.data),
+  createMovement: (data: any) => api.post('/stock/movement', data).then(res => res.data),
+  createTransfer: (data: any) => api.post('/stock/transfer', data).then(res => res.data),
+  getMovements: (params?: any) => api.get('/stock/movements', { params }).then(res => res.data),
+};
+
+export const alertsApi = {
+  getAlerts: (params?: any) => api.get('/alerts', { params }).then(res => res.data),
+  resolveAlert: (id: string) => api.patch(`/alerts/${id}/resolve`).then(res => res.data),
+};
+
+export const warehousesApi = {
+  getWarehouses: () => api.get('/warehouses').then(res => res.data),
+};
+
+export const productsApi = {
+  getProducts: (params?: any) => api.get('/products', { params }).then(res => res.data),
+};
