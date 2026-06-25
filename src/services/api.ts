@@ -82,9 +82,13 @@ export const alertsApi = {
 };
 
 export const warehousesApi = {
-  getWarehouses: () => api.get('/warehouses').then(res => res.data),
+  getWarehouses: (params?: any) => api.get('/warehouses', { params }).then(res => res.data),
+  createWarehouse: (data: any) => api.post('/warehouses', data).then(res => res.data),
+  deactivateWarehouse: (id: string) => api.patch(`/warehouses/${id}/deactivate`).then(res => res.data),
 };
 
 export const productsApi = {
   getProducts: (params?: any) => api.get('/products', { params }).then(res => res.data),
+  createProduct: (data: any) => api.post('/products', data).then(res => res.data),
+  deactivateProduct: (id: string) => api.patch(`/products/${id}/deactivate`).then(res => res.data),
 };
