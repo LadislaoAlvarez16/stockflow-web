@@ -11,6 +11,9 @@ import Movements from '@/pages/Movements';
 import Alerts from '@/pages/Alerts';
 import Products from '@/pages/Products';
 import Warehouses from '@/pages/Warehouses';
+import Batches from '@/pages/Batches';
+import BatchDetail from '@/pages/BatchDetail';
+import SerialNumbers from '@/pages/SerialNumbers';
 
 function App() {
   return (
@@ -26,6 +29,9 @@ function App() {
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/products" element={<Products />} />
             <Route path="/warehouses" element={<Warehouses />} />
+            <Route path="/batches" element={<Batches />} />
+            <Route path="/batches/:id" element={<BatchDetail />} />
+            <Route path="/serial-numbers" element={<SerialNumbers />} />
           </Route>
         </Route>
 

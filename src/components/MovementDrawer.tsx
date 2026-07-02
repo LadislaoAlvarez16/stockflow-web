@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { stockApi, productsApi } from '@/services/api';
+import { stockApi, productsApi, batchesApi } from '@/services/api';
 
 interface Warehouse {
   id: string;
@@ -28,6 +28,8 @@ export function MovementDrawer({ isOpen, onClose, onSuccess, warehouses }: Movem
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [batches, setBatches] = useState<any[]>([]);
+  const [fefoBatchId, setFefoBatchId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     productId: '',
@@ -36,6 +38,8 @@ export function MovementDrawer({ isOpen, onClose, onSuccess, warehouses }: Movem
     quantity: '',
     reference: '',
     notes: '',
+    batchId: '',
+    serialNumbers: '',
   });
 
   useEffect(() => {
@@ -48,9 +52,39 @@ export function MovementDrawer({ isOpen, onClose, onSuccess, warehouses }: Movem
         quantity: '',
         reference: '',
         notes: '',
+        batchId: '',
+        serialNumbers: '',
       });
+      setBatches([]);
+      setFefoBatchId(null);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (formData.productId) {
+      batchesApi.getBatches({ productId: formData.productId }).then(res => setBatches(res)).catch(console.error);
+    } else {
+      setBatches([]);
+    }
+  }, [formData.productId]);
+
+  useEffect(() => {
+    if (formData.type === 'OUTBOUND' && formData.productId && formData.warehouseId && formData.quantity && Number(formData.quantity) > 0) {
+      stockApi.getFefoSuggestion({ 
+        productId: formData.productId, 
+        warehouseId: formData.warehouseId, 
+        quantity: Number(formData.quantity) 
+      }).then(res => {
+        if (res.suggestedBatch) {
+          setFefoBatchId(res.suggestedBatch.id);
+        } else {
+          setFefoBatchId(null);
+        }
+      }).catch(console.error);
+    } else {
+      setFefoBatchId(null);
+    }
+  }, [formData.type, formData.productId, formData.warehouseId, formData.quantity]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,10 +95,17 @@ export function MovementDrawer({ isOpen, onClose, onSuccess, warehouses }: Movem
 
     setLoading(true);
     try {
-      await stockApi.createMovement({
+      const payload: any = {
         ...formData,
         quantity: Number(formData.quantity),
-      });
+      };
+      
+      if (formData.batchId) payload.batchId = formData.batchId;
+      if (formData.serialNumbers) {
+        payload.serialNumbers = formData.serialNumbers.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+      }
+
+      await stockApi.createMovement(payload);
       toast({ title: 'Éxito', description: 'Movimiento registrado correctamente.' });
       onSuccess();
       onClose();
@@ -146,6 +187,38 @@ export function MovementDrawer({ isOpen, onClose, onSuccess, warehouses }: Movem
               value={formData.quantity}
               onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="batchId">Lote (Opcional)</Label>
+            <select
+              id="batchId"
+              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300"
+              value={formData.batchId}
+              onChange={(e) => setFormData({ ...formData, batchId: e.target.value })}
+            >
+              <option value="">Sin Lote</option>
+              {batches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.batchNumber} {fefoBatchId === b.id ? ' (Recomendado FEFO)' : ''}
+                </option>
+              ))}
+            </select>
+            {fefoBatchId && formData.batchId !== fefoBatchId && formData.type === 'OUTBOUND' && (
+              <p className="text-xs text-orange-600 font-medium">Hay un lote sugerido por FEFO que vence antes.</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="serialNumbers">Números de Serie (Opcional)</Label>
+            <textarea
+              id="serialNumbers"
+              rows={3}
+              className="flex w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300"
+              placeholder="Ingresar separados por coma o salto de línea..."
+              value={formData.serialNumbers}
+              onChange={(e) => setFormData({ ...formData, serialNumbers: e.target.value })}
             />
           </div>
 

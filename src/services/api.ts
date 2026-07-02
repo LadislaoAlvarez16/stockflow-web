@@ -71,6 +71,10 @@ export const dashboardApi = {
 
 export const stockApi = {
   getStocks: (params?: any) => api.get('/stock', { params }).then(res => res.data),
+  getStockByBatch: (params?: { productId?: string; warehouseId?: string; batchId?: string; includeEmpty?: boolean }) => 
+    api.get('/stock/by-batch', { params }).then(res => res.data),
+  getFefoSuggestion: (params: { productId: string; warehouseId: string; quantity: number }) => 
+    api.get('/stock/fefo-suggestion', { params }).then(res => res.data),
   createMovement: (data: any) => api.post('/stock/movement', data).then(res => res.data),
   createTransfer: (data: any) => api.post('/stock/transfer', data).then(res => res.data),
   getMovements: (params?: any) => api.get('/stock/movements', { params }).then(res => res.data),
@@ -91,4 +95,20 @@ export const productsApi = {
   getProducts: (params?: any) => api.get('/products', { params }).then(res => res.data),
   createProduct: (data: any) => api.post('/products', data).then(res => res.data),
   deactivateProduct: (id: string) => api.patch(`/products/${id}/deactivate`).then(res => res.data),
+};
+
+export const batchesApi = {
+  getBatches: (params?: any) => api.get('/batches', { params }).then(res => res.data),
+  getExpiringBatches: (daysThreshold?: number) => 
+    api.get('/batches/expiring-soon', { params: { daysThreshold } }).then(res => res.data),
+  getBatchDetails: (id: string) => api.get(`/batches/${id}`).then(res => res.data),
+  getBatchMovements: (id: string, params?: { page?: number; limit?: number }) => 
+    api.get(`/batches/${id}/movements`, { params }).then(res => res.data),
+  getBatchSerialNumbers: (id: string, params?: { page?: number; limit?: number; status?: string }) => 
+    api.get(`/batches/${id}/serial-numbers`, { params }).then(res => res.data),
+};
+
+export const serialNumbersApi = {
+  getHistory: (serialNumber: string) => 
+    api.get(`/serial-numbers/${serialNumber}/history`).then(res => res.data),
 };

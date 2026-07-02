@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { LayoutDashboard, Package, ArrowRightLeft, Bell, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, ArrowRightLeft, Bell, LogOut, Hash } from 'lucide-react';
 
 export const Layout = () => {
   const { logout, user } = useAuth();
@@ -10,6 +10,8 @@ export const Layout = () => {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Stock', href: '/stock', icon: Package },
     { name: 'Movimientos', href: '/movements', icon: ArrowRightLeft },
+    { name: 'Lotes', href: '/batches', icon: Package },
+    { name: 'Series', href: '/serial-numbers', icon: Hash },
     { name: 'Alertas', href: '/alerts', icon: Bell },
   ];
 
