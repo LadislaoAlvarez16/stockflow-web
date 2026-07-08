@@ -14,6 +14,11 @@ import Warehouses from '@/pages/Warehouses';
 import Batches from '@/pages/Batches';
 import BatchDetail from '@/pages/BatchDetail';
 import SerialNumbers from '@/pages/SerialNumbers';
+import PhysicalInventoryList from '@/pages/physical-inventory/PhysicalInventoryList';
+import PhysicalInventoryUpload from '@/pages/physical-inventory/PhysicalInventoryUpload';
+import ReportsDashboard from '@/pages/reports/ReportsDashboard';
+import WebhooksList from '@/pages/Webhooks/WebhooksList';
+import WebhookDetail from '@/pages/Webhooks/WebhookDetail';
 
 function App() {
   return (
@@ -32,6 +37,11 @@ function App() {
             <Route path="/batches" element={<Batches />} />
             <Route path="/batches/:id" element={<BatchDetail />} />
             <Route path="/serial-numbers" element={<SerialNumbers />} />
+            <Route path="/physical-inventory" element={<PhysicalInventoryList />} />
+            <Route path="/physical-inventory/upload" element={<PhysicalInventoryUpload />} />
+            <Route path="/reports" element={<ReportsDashboard />} />
+            <Route path="/webhooks" element={<WebhooksList />} />
+            <Route path="/webhooks/:id" element={<WebhookDetail />} />
           </Route>
         </Route>
 

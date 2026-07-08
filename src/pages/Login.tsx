@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Package, Lock, User } from 'lucide-react';
 export const Login = () => {
   const { login } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +40,7 @@ export const Login = () => {
         title: "¡Bienvenido a StockFlow!",
         description: "Has iniciado sesión exitosamente.",
       });
+      navigate('/dashboard');
     } catch (error: any) {
       toast({
         variant: "destructive",

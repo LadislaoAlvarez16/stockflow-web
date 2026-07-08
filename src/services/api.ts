@@ -112,3 +112,71 @@ export const serialNumbersApi = {
   getHistory: (serialNumber: string) => 
     api.get(`/serial-numbers/${serialNumber}/history`).then(res => res.data),
 };
+
+export const physicalInventoryApi = {
+  getSessions: () => api.get('/physical-inventory').then(res => res.data),
+  uploadSession: (warehouseId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('warehouseId', warehouseId);
+    formData.append('file', file);
+    return api.post('/physical-inventory', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }).then(res => res.data);
+  },
+  downloadSessionReport: (sessionId: string) => {
+    return reportsApi.downloadReport(`/physical-inventory/${sessionId}/report`);
+  }
+};
+
+export const reportsApi = {
+  getDirectory: () => api.get('/reports').then(res => res.data),
+  downloadReport: async (url: string, params?: any) => {
+    try {
+      const response = await api.get(url, {
+        params,
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const objectUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      
+      // Intentar extraer el nombre del archivo del header Content-Disposition si existe
+      let filename = `reporte-${Date.now()}.pdf`;
+      const disposition = response.headers['content-disposition'];
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) {
+          filename = matches[1].replace(/['"]/g, '');
+        }
+      }
+
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      // Timeout para asegurar que la descarga inicie antes de limpiar la URL
+      setTimeout(() => {
+        window.URL.revokeObjectURL(objectUrl);
+      }, 100);
+      
+    } catch (error: any) {
+      if (error.response && error.response.data instanceof Blob) {
+        // Parsear el Blob para leer el JSON de error
+        const text = await error.response.data.text();
+        try {
+          const errorData = JSON.parse(text);
+          error.response.data = errorData; // Inyectar el JSON de nuevo para que sea atrapado por el Toast o manejador
+        } catch (e) {
+          // Si no es JSON válido, no hacemos nada extra
+        }
+      }
+      throw error;
+    }
+  },
+};

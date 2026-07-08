@@ -1,12 +1,12 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { LayoutDashboard, Package, ArrowRightLeft, Bell, LogOut, Hash } from 'lucide-react';
+import { LayoutDashboard, Package, ArrowRightLeft, Bell, LogOut, Hash, Globe } from 'lucide-react';
 
 export const Layout = () => {
   const { logout, user } = useAuth();
   const location = useLocation();
 
-  const navigation = [
+  const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Stock', href: '/stock', icon: Package },
     { name: 'Movimientos', href: '/movements', icon: ArrowRightLeft },
@@ -14,6 +14,10 @@ export const Layout = () => {
     { name: 'Series', href: '/serial-numbers', icon: Hash },
     { name: 'Alertas', href: '/alerts', icon: Bell },
   ];
+
+  const navigation = user?.role === 'ADMIN' 
+    ? [...baseNavigation, { name: 'Webhooks', href: '/webhooks', icon: Globe }]
+    : baseNavigation;
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
