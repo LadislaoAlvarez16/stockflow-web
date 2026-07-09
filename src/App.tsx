@@ -19,6 +19,9 @@ import PhysicalInventoryUpload from '@/pages/physical-inventory/PhysicalInventor
 import ReportsDashboard from '@/pages/reports/ReportsDashboard';
 import WebhooksList from '@/pages/Webhooks/WebhooksList';
 import WebhookDetail from '@/pages/Webhooks/WebhookDetail';
+import Suppliers from '@/pages/Suppliers';
+import PurchaseOrders from '@/pages/purchase-orders/PurchaseOrders';
+import PurchaseOrderDetail from '@/pages/purchase-orders/PurchaseOrderDetail';
 
 function App() {
   return (
@@ -42,6 +45,9 @@ function App() {
             <Route path="/reports" element={<ReportsDashboard />} />
             <Route path="/webhooks" element={<WebhooksList />} />
             <Route path="/webhooks/:id" element={<WebhookDetail />} />
+            <Route path="/suppliers" element={<Suppliers />} />
+            <Route path="/purchase-orders" element={<PurchaseOrders />} />
+            <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
           </Route>
         </Route>
 
