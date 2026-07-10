@@ -23,6 +23,7 @@ import Suppliers from '@/pages/Suppliers';
 import PurchaseOrders from '@/pages/purchase-orders/PurchaseOrders';
 import PurchaseOrderDetail from '@/pages/purchase-orders/PurchaseOrderDetail';
 import Imports from '@/pages/Imports';
+import AuditLogs from '@/pages/AuditLogs';
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
             <Route path="/purchase-orders" element={<PurchaseOrders />} />
             <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
             <Route path="/imports" element={<Imports />} />
+            <Route path="/audit-logs" element={<AuditLogs />} />
           </Route>
         </Route>
 

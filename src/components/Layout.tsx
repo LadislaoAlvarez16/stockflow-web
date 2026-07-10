@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { LayoutDashboard, Package, ArrowRightLeft, Bell, LogOut, Hash, Globe, Users, ShoppingCart, UploadCloud } from 'lucide-react';
+import { LayoutDashboard, Package, ArrowRightLeft, Bell, LogOut, Hash, Globe, Users, ShoppingCart, UploadCloud, ShieldAlert } from 'lucide-react';
 
 export const Layout = () => {
   const { logout, user } = useAuth();
@@ -18,7 +18,12 @@ export const Layout = () => {
   ];
 
   const navigation = user?.role === 'ADMIN' 
-    ? [...baseNavigation, { name: 'Webhooks', href: '/webhooks', icon: Globe }, { name: 'Importaciones', href: '/imports', icon: UploadCloud }]
+    ? [
+        ...baseNavigation, 
+        { name: 'Webhooks', href: '/webhooks', icon: Globe }, 
+        { name: 'Importaciones', href: '/imports', icon: UploadCloud },
+        { name: 'Auditoría', href: '/audit-logs', icon: ShieldAlert }
+      ]
     : baseNavigation;
 
   return (
