@@ -22,6 +22,7 @@ import WebhookDetail from '@/pages/Webhooks/WebhookDetail';
 import Suppliers from '@/pages/Suppliers';
 import PurchaseOrders from '@/pages/purchase-orders/PurchaseOrders';
 import PurchaseOrderDetail from '@/pages/purchase-orders/PurchaseOrderDetail';
+import Imports from '@/pages/Imports';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/purchase-orders" element={<PurchaseOrders />} />
             <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
+            <Route path="/imports" element={<Imports />} />
           </Route>
         </Route>
 
