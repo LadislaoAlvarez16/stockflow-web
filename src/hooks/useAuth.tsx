@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { api } from '@/services/api';
+import { AxiosError } from 'axios';
 
 export interface User {
   id: string;
@@ -14,6 +15,8 @@ interface LoginCredentials {
   name?: string;
   password?: string;
 }
+
+export type AuthMeResponse = User;
 
 interface AuthContextType {
   user: User | null;
@@ -31,13 +34,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    // Para el MVP, la existencia de un token implica que está autenticado hasta que el interceptor diga lo contrario
-    if (token) {
-      setIsAuthenticated(true);
-      // Opcional: decodificar el token para extraer el User o llamar a un endpoint /auth/me
-    }
-    setIsLoading(false);
+    const initAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const { data } = await api.get<AuthMeResponse>('/auth/me');
+          setUser(data);
+          setIsAuthenticated(true);
+        } catch (error: unknown) {
+          if (error instanceof AxiosError && error.response?.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            setIsAuthenticated(false);
+            setUser(null);
+          }
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
