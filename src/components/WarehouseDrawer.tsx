@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState } from 'react';
 import { warehousesApi } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
@@ -40,12 +41,14 @@ export default function WarehouseDrawer({ open, onOpenChange, onSuccess }: Wareh
       onSuccess();
       onOpenChange(false);
       setFormData({ name: '', code: '', location: '', manager: '' });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
       toast({
         variant: 'destructive',
         title: 'Error al crear depósito',
         description: error.response?.data?.message || 'Revisa los datos e intenta de nuevo.',
       });
+          }
     } finally {
       setLoading(false);
     }

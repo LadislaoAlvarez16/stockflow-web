@@ -63,7 +63,7 @@ export default function Stock() {
   const fetchStocks = async () => {
     setLoading(true);
     try {
-      const params: any = {};
+      const params: Record<string, string | number | boolean> = {};
       if (search) params.search = search;
       if (warehouseId) params.warehouseId = warehouseId;
       if (lowStock) params.lowStock = true;
@@ -78,11 +78,13 @@ export default function Stock() {
   };
 
   useEffect(() => {
-    fetchWarehouses();
+    fetchWarehouses();  
+     
   }, []);
 
   useEffect(() => {
-    fetchStocks();
+    fetchStocks();  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, warehouseId, lowStock]);
 
   const updateSearchParam = (key: string, value: string | boolean) => {

@@ -50,7 +50,7 @@ export default function Dashboard() {
         setSummary(summaryRes);
         setMovements(movementsRes);
         setLowStock(lowStockRes);
-      } catch (error) {
+      } catch (error: unknown) { // eslint-disable-line @typescript-eslint/no-unused-vars
         toast({
           variant: 'destructive',
           title: 'Error de carga',

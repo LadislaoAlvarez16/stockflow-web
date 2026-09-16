@@ -20,6 +20,25 @@ interface Warehouse {
   isActive: boolean;
 }
 
+import axios from 'axios';
+
+function WarehouseSkeletons() {
+  return (
+    <>
+      {[1, 2, 3].map(i => (
+        <TableRow key={i}>
+          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+          <TableCell><Skeleton className="h-5 w-16 mx-auto" /></TableCell>
+          <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
+}
+
 export default function Warehouses() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -41,7 +60,8 @@ export default function Warehouses() {
   };
 
   useEffect(() => {
-    fetchWarehouses();
+    fetchWarehouses();  
+     
   }, []);
 
   const handleDeactivate = async (id: string, name: string) => {
@@ -53,29 +73,18 @@ export default function Warehouses() {
       await warehousesApi.deactivateWarehouse(id);
       toast({ title: 'Desactivado', description: `El depósito ${name} fue desactivado correctamente.` });
       fetchWarehouses();
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error de permisos o servidor',
-        description: error.response?.data?.message || 'No se pudo desactivar el depósito.',
-      });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast({
+          variant: 'destructive',
+          title: 'Error de permisos o servidor',
+          description: error.response?.data?.message || 'No se pudo desactivar el depósito.',
+        });
+      }
     }
   };
 
-  const Skeletons = () => (
-    <>
-      {[1, 2, 3].map(i => (
-        <TableRow key={i}>
-          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-16 mx-auto" /></TableCell>
-          <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
-        </TableRow>
-      ))}
-    </>
-  );
+
 
   return (
     <div className="space-y-6">
@@ -111,7 +120,7 @@ export default function Warehouses() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <Skeletons />
+                  <WarehouseSkeletons />
                 ) : warehouses.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">

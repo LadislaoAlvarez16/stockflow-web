@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '../hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +21,7 @@ interface AuditLog {
   action: string;
   entity: string | null;
   entityId: string | null;
-  metadata: any;
+  metadata: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -55,7 +55,8 @@ export default function AuditLogs() {
       
       setLogs(prev => reset ? data : [...prev, ...data]);
       setNextCursor(newCursor);
-    } catch (error: any) {
+    } catch (error) {
+      console.error(error);
       toast({
         title: 'Error',
         description: 'No se pudieron cargar los registros de auditoría',
@@ -67,9 +68,31 @@ export default function AuditLogs() {
   };
 
   useEffect(() => {
-    fetchLogs(undefined, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    let isMounted = true;
+    const fetchInitial = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:3000/audit-logs?`);
+        if (isMounted) {
+          setLogs(response.data.data);
+          setNextCursor(response.data.nextCursor);
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error(error);
+          toast({
+            title: 'Error',
+            description: 'No se pudieron cargar los registros de auditoría',
+            variant: 'destructive'
+          });
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchInitial();
+    return () => { isMounted = false; };
+  }, [toast]);
 
   const handleFilter = (e: React.FormEvent) => {
     e.preventDefault();

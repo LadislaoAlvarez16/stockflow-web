@@ -1,38 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '../../components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../../components/ui/sheet';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { useToast } from '../../hooks/use-toast';
 
 export default function PurchaseOrderDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<{ id?: string, status?: string, supplier?: { name?: string }, warehouse?: { id?: string, name?: string }, items?: { productId: string, product: { name?: string }, quantityOrdered: number, quantityReceived: number, costPrice?: number }[] } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   
   // Reception state
   const [reference, setReference] = useState('');
   const [receiveQuantities, setReceiveQuantities] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    fetchOrder();
-  }, [id]);
-
   const fetchOrder = async () => {
     try {
       const { data } = await axios.get(`http://localhost:3000/purchase-orders/${id}`);
       setOrder(data);
-    } catch (error) {
-      toast({ title: 'Error', description: 'Failed to fetch order details', variant: 'destructive' });
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) toast({ title: 'Error', description: 'Failed to fetch order details', variant: 'destructive' });
       navigate('/purchase-orders');
     }
   };
+
+  useEffect(() => {
+    fetchOrder();  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleQuantityChange = (productId: string, value: string, max: number) => {
     const numValue = parseInt(value || '0');
@@ -58,7 +59,7 @@ export default function PurchaseOrderDetail() {
 
     try {
       await axios.patch(`http://localhost:3000/purchase-orders/${id}/receive`, {
-        warehouseId: order.warehouse.id,
+        warehouseId: order?.warehouse?.id,
         reference,
         items: itemsToReceive,
       });
@@ -67,7 +68,8 @@ export default function PurchaseOrderDetail() {
       setReference('');
       setReceiveQuantities({});
       fetchOrder();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!axios.isAxiosError(error)) return;
       const msg = error.response?.data?.message || 'Failed to receive items';
       toast({ title: 'Error', description: Array.isArray(msg) ? msg.join(', ') : msg, variant: 'destructive' });
     }
@@ -84,7 +86,7 @@ export default function PurchaseOrderDetail() {
           <Button variant="outline" onClick={() => navigate('/purchase-orders')} className="mb-4">← Volver</Button>
           <h1 className="text-2xl font-bold">Orden de Compra {id?.substring(0, 8)}</h1>
           <p className="text-gray-500">
-            Proveedor: {order.supplier.name} | Depósito: {order.warehouse.name} | Estado: <span className="font-semibold">{order.status}</span>
+            Proveedor: {order.supplier?.name} | Depósito: {order.warehouse?.name} | Estado: <span className="font-semibold">{order.status}</span>
           </p>
         </div>
 
@@ -114,8 +116,8 @@ export default function PurchaseOrderDetail() {
                     </TableHeader>
                     <TableBody>
                       {order.items
-                        .filter((item: any) => item.quantityOrdered - item.quantityReceived > 0)
-                        .map((item: any) => {
+                        ?.filter((item: { productId: string, product: { name?: string }, quantityOrdered: number, quantityReceived: number, costPrice?: number }) => item.quantityOrdered - item.quantityReceived > 0)
+                        .map((item: { productId: string, product: { name?: string }, quantityOrdered: number, quantityReceived: number, costPrice?: number }) => {
                           const pending = item.quantityOrdered - item.quantityReceived;
                           return (
                             <TableRow key={item.productId}>
@@ -156,7 +158,7 @@ export default function PurchaseOrderDetail() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {order.items.map((item: any) => {
+            {order.items?.map((item: { productId: string, product: { name?: string }, quantityOrdered: number, quantityReceived: number, costPrice?: number }) => {
               const pending = item.quantityOrdered - item.quantityReceived;
               return (
                 <TableRow key={item.productId}>

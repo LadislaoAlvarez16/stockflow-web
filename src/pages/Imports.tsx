@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,13 +9,31 @@ import { Input } from '@/components/ui/input';
 
 type ImportType = 'products' | 'initial-stock' | 'movements';
 
+interface Warehouse {
+  id: string;
+  name: string;
+  isActive: boolean;
+}
+
+interface ImportError {
+  row: number;
+  reason: string;
+}
+
+interface ImportResult {
+  totalProcessed: number;
+  successCount: number;
+  errorCount: number;
+  errors?: ImportError[];
+}
+
 export default function Imports() {
   const [importType, setImportType] = useState<ImportType>('products');
   const [warehouseId, setWarehouseId] = useState('');
-  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ImportResult | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -63,9 +81,13 @@ export default function Imports() {
       if (fileInputRef.current) fileInputRef.current.value = '';
       setFile(null);
       
-    } catch (error: any) {
-      const msg = error.response?.data?.message || 'Error de red o de servidor';
-      toast({ title: 'Error Crítico', description: Array.isArray(msg) ? msg.join(', ') : msg, variant: 'destructive' });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const msg = error.response?.data?.message || 'Error de red o de servidor';
+        toast({ title: 'Error Crítico', description: Array.isArray(msg) ? msg.join(', ') : msg, variant: 'destructive' });
+      } else {
+        toast({ title: 'Error Crítico', description: 'Ocurrió un error inesperado', variant: 'destructive' });
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -182,7 +204,7 @@ export default function Imports() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {result.errors.map((e: any, idx: number) => (
+                  {result.errors.map((e: ImportError, idx: number) => (
                     <TableRow key={idx}>
                       <TableCell className="font-medium">{e.row}</TableCell>
                       <TableCell className="text-red-600">{e.reason}</TableCell>

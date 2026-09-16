@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react';
 import { useToast } from './use-toast';
-import { 
-  webhooksService, 
+import { webhooksService } from '@/services/webhooks.service';
+import type { 
   WebhookSubscription, 
   WebhookEvent, 
   WebhookDelivery 
 } from '@/services/webhooks.service';
+import { AxiosError } from 'axios';
 
 export const useWebhooks = () => {
   const { toast } = useToast();
@@ -23,12 +24,14 @@ export const useWebhooks = () => {
     try {
       const data = await webhooksService.getWebhooks();
       setWebhooks(data);
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al cargar webhooks",
-        description: error.response?.data?.message || "No se pudieron cargar las suscripciones.",
-      });
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast({
+          variant: "destructive",
+          title: "Error al cargar webhooks",
+          description: error.response?.data?.message || "No se pudieron cargar las suscripciones.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -39,12 +42,14 @@ export const useWebhooks = () => {
     try {
       const data = await webhooksService.getWebhook(id);
       setCurrentWebhook(data);
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al cargar el webhook",
-        description: error.response?.data?.message || "No se pudo cargar la suscripción.",
-      });
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast({
+          variant: "destructive",
+          title: "Error al cargar el webhook",
+          description: error.response?.data?.message || "No se pudo cargar la suscripción.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +59,7 @@ export const useWebhooks = () => {
     try {
       const data = await webhooksService.getEvents();
       setEvents(data);
-    } catch (error: any) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error al cargar eventos",
@@ -69,12 +74,14 @@ export const useWebhooks = () => {
       const data = await webhooksService.createWebhook(url, selectedEvents);
       setWebhooks((prev) => [data, ...prev]);
       return data; // Retorna el webhook con el secret
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al crear webhook",
-        description: error.response?.data?.message || "Ocurrió un error al crear la suscripción.",
-      });
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast({
+          variant: "destructive",
+          title: "Error al crear webhook",
+          description: error.response?.data?.message || "Ocurrió un error al crear la suscripción.",
+        });
+      }
       return null;
     } finally {
       setIsLoading(false);
@@ -93,12 +100,14 @@ export const useWebhooks = () => {
         title: "Webhook desactivado",
         description: "La suscripción ha sido desactivada exitosamente.",
       });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "No se pudo desactivar el webhook.",
-      });
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response?.data?.message || "No se pudo desactivar el webhook.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -111,12 +120,14 @@ export const useWebhooks = () => {
         title: "Prueba encolada",
         description: "Se ha disparado un evento de prueba en BullMQ.",
       });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al probar webhook",
-        description: error.response?.data?.message || "No se pudo enviar el evento de prueba.",
-      });
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast({
+          variant: "destructive",
+          title: "Error al probar webhook",
+          description: error.response?.data?.message || "No se pudo enviar el evento de prueba.",
+        });
+      }
     }
   };
 
@@ -140,7 +151,7 @@ export const useWebhooks = () => {
       }
       
       setNextCursor(response.nextCursor);
-    } catch (error: any) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error al cargar entregas",

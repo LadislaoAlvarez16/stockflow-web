@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { productsApi } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,6 +22,22 @@ interface Product {
   isActive: boolean;
 }
 
+const Skeletons = () => (
+  <>
+    {[1, 2, 3, 4, 5].map(i => (
+      <TableRow key={i}>
+        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+        <TableCell><Skeleton className="h-5 w-16 mx-auto" /></TableCell>
+        <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+      </TableRow>
+    ))}
+  </>
+);
+
 export default function Products() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -34,10 +50,10 @@ export default function Products() {
   const page = parseInt(searchParams.get('page') || '1', 10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const params: any = { page, limit: 15 };
+      const params: Record<string, string | number> = { page, limit: 15 };
       if (search) params.search = search;
 
       const res = await productsApi.getProducts(params);
@@ -48,12 +64,11 @@ export default function Products() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search]);
 
   useEffect(() => {
     fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, page]);
+  }, [fetchProducts]);
 
   const updateSearchParam = (key: string, value: string) => {
     const newParams = new URLSearchParams(searchParams);
@@ -73,30 +88,17 @@ export default function Products() {
       await productsApi.deactivateProduct(id);
       toast({ title: 'Desactivado', description: `El producto ${name} fue desactivado correctamente.` });
       fetchProducts();
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
       toast({
         variant: 'destructive',
         title: 'Error de permisos o servidor',
-        description: error.response?.data?.message || 'No se pudo desactivar el producto.',
+        description: err.response?.data?.message || 'No se pudo desactivar el producto.',
       });
     }
   };
 
-  const Skeletons = () => (
-    <>
-      {[1, 2, 3, 4, 5].map(i => (
-        <TableRow key={i}>
-          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-16 mx-auto" /></TableCell>
-          <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-        </TableRow>
-      ))}
-    </>
-  );
+
 
   return (
     <div className="space-y-6">

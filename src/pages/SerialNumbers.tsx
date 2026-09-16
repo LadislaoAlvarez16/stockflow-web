@@ -1,11 +1,29 @@
 import { useState } from 'react';
+import axios from 'axios';
 import { serialNumbersApi } from '@/services/api';
 import { Search, Hash, Box, ArrowRightLeft, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface SerialNumberHistory {
+  serialNumber: string;
+  status: string;
+  product?: { name: string };
+  batch?: { batchNumber: string };
+  warehouse?: { name: string };
+  inboundMovement?: {
+    createdAt: string;
+    warehouse?: { name: string };
+    createdBy?: { name: string };
+  };
+  outboundMovement?: {
+    createdAt: string;
+    createdBy?: { name: string };
+  };
+}
+
 export default function SerialNumbers() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [history, setHistory] = useState<any>(null);
+  const [history, setHistory] = useState<SerialNumberHistory | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,8 +37,12 @@ export default function SerialNumbers() {
       setHistory(null);
       const data = await serialNumbersApi.getHistory(searchTerm.trim());
       setHistory(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Número de serie no encontrado o error de red');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Número de serie no encontrado o error de red');
+      } else {
+        setError('Error desconocido');
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { reportsApi, warehousesApi } from '../../services/api';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
@@ -7,14 +8,14 @@ import { Input } from '../../components/ui/input';
 import { useToast } from '../../hooks/use-toast';
 
 export default function ReportsDashboard() {
-  const [reports, setReports] = useState<any[]>([]);
-  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [reports, setReports] = useState<{ id?: string, name?: string, description?: string, url?: string, filters?: { name: string, description: string, required?: boolean, type?: string }[] }[]>([]);
+  const [warehouses, setWarehouses] = useState<{ id?: string, name?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Estados locales por reporte
-  const [formData, setFormData] = useState<Record<string, Record<string, any>>>({});
+  const [formData, setFormData] = useState<Record<string, Record<string, string | number>>>({});
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -25,12 +26,14 @@ export default function ReportsDashboard() {
         ]);
         setReports(repData);
         setWarehouses(whData);
-      } catch (err: any) {
-        toast({
-          variant: "destructive",
-          title: "Error al cargar reportes",
-          description: err.message,
-        });
+      } catch (err: unknown) {
+        if(axios.isAxiosError(err)) {
+          toast({
+            variant: "destructive",
+            title: "Error al cargar reportes",
+            description: err.message,
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -38,7 +41,7 @@ export default function ReportsDashboard() {
     fetchInitialData();
   }, [toast]);
 
-  const handleInputChange = (reportId: string, fieldName: string, value: any) => {
+  const handleInputChange = (reportId: string, fieldName: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       [reportId]: {
@@ -48,10 +51,10 @@ export default function ReportsDashboard() {
     }));
   };
 
-  const handleGenerate = async (report: any) => {
+  const handleGenerate = async (report: { id?: string, url?: string }) => {
     try {
-      setGeneratingId(report.id);
-      const params = formData[report.id] || {};
+      if (report.id) setGeneratingId(report.id);
+      const params = (report.id ? formData[report.id] : {}) || {};
       
       // Validación cliente (fechas requeridas en historial)
       if (report.id === 'movement-history') {
@@ -60,25 +63,27 @@ export default function ReportsDashboard() {
         }
       }
 
-      await reportsApi.downloadReport(report.url, params);
+      await reportsApi.downloadReport(report.url as string, params);
       
       toast({
         title: "Reporte Generado",
         description: "La descarga ha comenzado.",
       });
-    } catch (err: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al generar reporte",
-        description: err.response?.data?.message || err.message,
-      });
+    } catch (err: unknown) {
+      if(axios.isAxiosError(err)) {
+        toast({
+          variant: "destructive",
+          title: "Error al generar reporte",
+          description: err.response?.data?.message || err.message,
+        });
+      }
     } finally {
       setGeneratingId(null);
     }
   };
 
-  const renderFilterInput = (reportId: string, filter: any) => {
-    const value = formData[reportId]?.[filter.name] || '';
+  const renderFilterInput = (reportId: string, filter: { name: string, description?: string, required?: boolean, type?: string }) => {
+    const value = formData[reportId]?.[filter.name as string] || '';
 
     if (filter.name === 'warehouseId') {
       return (
@@ -131,7 +136,7 @@ export default function ReportsDashboard() {
               <CardDescription className="h-10 line-clamp-2">{report.description}</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 space-y-4">
-              {report.filters?.map((filter: any) => renderFilterInput(report.id, filter))}
+              {report.filters?.map((filter: { name: string, description?: string, required?: boolean, type?: string }) => renderFilterInput(report.id as string, filter))}
               {(!report.filters || report.filters.length === 0) && (
                 <div className="text-sm text-muted-foreground py-2">
                   No requiere filtros adicionales.

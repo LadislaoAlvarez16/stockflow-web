@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -73,12 +74,14 @@ export function TransferDrawer({ isOpen, onClose, onSuccess, warehouses }: Trans
       toast({ title: 'Éxito', description: 'Transferencia registrada correctamente.' });
       onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
       toast({
         variant: 'destructive',
         title: 'Error',
         description: error.response?.data?.message || 'Ocurrió un error al registrar la transferencia.',
       });
+          }
     } finally {
       setLoading(false);
     }

@@ -1,32 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { api } from '@/services/api';
 import { AxiosError } from 'axios';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: 'ADMIN' | 'OPERATOR' | 'VIEWER';
-}
-
-interface LoginCredentials {
-  email?: string;
-  name?: string;
-  password?: string;
-}
-
-export type AuthMeResponse = User;
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => void;
-  isLoading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext, type AuthMeResponse, type LoginCredentials, type User } from '@/context/AuthContext';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -79,11 +55,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};

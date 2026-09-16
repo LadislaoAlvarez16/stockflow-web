@@ -1,14 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+interface Supplier {
+  id: string;
+  name: string;
+  taxId: string;
+  email: string;
+  phone: string;
+  address: string;
+  isActive: boolean;
+}
+
 export default function Suppliers() {
-  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', taxId: '', email: '', phone: '', address: '' });
   const { toast } = useToast();
@@ -17,13 +27,14 @@ export default function Suppliers() {
     try {
       const { data } = await axios.get('http://localhost:3000/suppliers');
       setSuppliers(data);
-    } catch (error) {
+    } catch (_error: unknown) { // eslint-disable-line @typescript-eslint/no-unused-vars
       toast({ title: 'Error', description: 'Failed to fetch suppliers', variant: 'destructive' });
     }
   };
 
   useEffect(() => {
-    fetchSuppliers();
+    fetchSuppliers();  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,11 +45,15 @@ export default function Suppliers() {
       setIsOpen(false);
       setFormData({ name: '', taxId: '', email: '', phone: '', address: '' });
       fetchSuppliers();
-    } catch (error: any) {
-      if (error.response?.status === 409) {
-        toast({ title: 'Error', description: 'El CUIT ya existe', variant: 'destructive' });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          toast({ title: 'Error', description: 'El CUIT ya existe', variant: 'destructive' });
+        } else {
+          toast({ title: 'Error', description: 'Failed to create supplier', variant: 'destructive' });
+        }
       } else {
-        toast({ title: 'Error', description: 'Failed to create supplier', variant: 'destructive' });
+        toast({ title: 'Error', description: 'Error desconocido', variant: 'destructive' });
       }
     }
   };

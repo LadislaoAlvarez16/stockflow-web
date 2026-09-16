@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -41,12 +42,14 @@ export const Login = () => {
         description: "Has iniciado sesión exitosamente.",
       });
       navigate('/dashboard');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
       toast({
         variant: "destructive",
         title: "Error de autenticación",
         description: error.response?.data?.message || "Credenciales inválidas. Por favor, intenta nuevamente.",
       });
+          }
     } finally {
       setIsLoading(false);
     }

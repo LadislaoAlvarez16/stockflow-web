@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { physicalInventoryApi, warehousesApi } from '../../services/api';
 import { Button } from '../../components/ui/button';
@@ -8,7 +9,7 @@ import { useToast } from '../../hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 export default function PhysicalInventoryUpload() {
-  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [warehouses, setWarehouses] = useState<{ id: string, name: string }[]>([]);
   const [warehouseId, setWarehouseId] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,12 +22,14 @@ export default function PhysicalInventoryUpload() {
         const data = await warehousesApi.getWarehouses();
         setWarehouses(data);
         if (data.length > 0) setWarehouseId(data[0].id);
-      } catch (err: any) {
-        toast({
-          variant: "destructive",
-          title: "Error al cargar depósitos",
-          description: err.message,
-        });
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          toast({
+            variant: "destructive",
+            title: "Error al cargar depósitos",
+            description: err.message,
+          });
+        }
       }
     };
     fetchWarehouses();
@@ -57,17 +60,19 @@ export default function PhysicalInventoryUpload() {
       
       toast({
         title: isError ? "Procesado con Errores" : "Inventario procesado",
-        description: `Procesados: \${res.matchedItems} exactos, \${res.adjustedItems} ajustados, \${res.skippedItems} omitidos.`,
+        description: `Procesados: ${res.matchedItems} exactos, ${res.adjustedItems} ajustados, ${res.skippedItems} omitidos.`,
         variant: isError ? "destructive" : "default"
       });
       
       navigate('/physical-inventory');
-    } catch (err: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al subir inventario",
-        description: err.response?.data?.message || err.message,
-      });
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast({
+          variant: "destructive",
+          title: "Error al subir inventario",
+          description: err.response?.data?.message || err.message,
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { batchesApi } from '@/services/api';
 import { ArrowLeft, Package, Clock, MapPin, Hash, ArrowRightLeft, User } from 'lucide-react';
@@ -6,9 +6,28 @@ import { format } from 'date-fns';
 
 export default function BatchDetail() {
   const { id } = useParams<{ id: string }>();
-  const [batch, setBatch] = useState<any>(null);
-  const [movements, setMovements] = useState<any[]>([]);
-  const [serialNumbers, setSerialNumbers] = useState<any[]>([]);
+  const [batch, setBatch] = useState<{
+    batchNumber: string;
+    totalStock: number;
+    expiryDate: string | null;
+    manufacturingDate: string | null;
+    product?: { name: string };
+    batchStocks?: { warehouse: { name: string }; quantity: number }[];
+  } | null>(null);
+  const [movements, setMovements] = useState<{
+    id: string;
+    createdAt: string;
+    type: string;
+    warehouse?: { name: string };
+    quantity: number;
+    createdBy?: { name: string };
+  }[]>([]);
+  const [serialNumbers, setSerialNumbers] = useState<{
+    id: string;
+    serialNumber: string;
+    status: string;
+    createdAt: string;
+  }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,33 +37,20 @@ export default function BatchDetail() {
   const [snPage, setSnPage] = useState(1);
   const [snTotalPages, setSnTotalPages] = useState(1);
 
-  useEffect(() => {
-    if (id) {
-      fetchData();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (id) fetchMovements();
-  }, [id, movPage]);
-
-  useEffect(() => {
-    if (id) fetchSerialNumbers();
-  }, [id, snPage]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await batchesApi.getBatchDetails(id!);
       setBatch(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al cargar detalles del lote');
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Error al cargar detalles del lote');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
 
-  const fetchMovements = async () => {
+  const fetchMovements = useCallback(async () => {
     try {
       const res = await batchesApi.getBatchMovements(id!, { page: movPage, limit: 10 });
       setMovements(res.data);
@@ -52,9 +58,9 @@ export default function BatchDetail() {
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [id, movPage]);
 
-  const fetchSerialNumbers = async () => {
+  const fetchSerialNumbers = useCallback(async () => {
     try {
       const res = await batchesApi.getBatchSerialNumbers(id!, { page: snPage, limit: 10 });
       setSerialNumbers(res.data);
@@ -62,7 +68,21 @@ export default function BatchDetail() {
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [id, snPage]);
+
+  useEffect(() => {
+    if (id) {
+      fetchData();
+    }
+  }, [id, fetchData]);
+
+  useEffect(() => {
+    if (id) fetchMovements();
+  }, [id, fetchMovements]);
+
+  useEffect(() => {
+    if (id) fetchSerialNumbers();
+  }, [id, fetchSerialNumbers]);
 
   if (isLoading) return <div className="p-8 text-center text-slate-500">Cargando trazabilidad...</div>;
   if (error || !batch) return <div className="p-8 text-center text-red-500">{error || 'Lote no encontrado'}</div>;
@@ -105,8 +125,8 @@ export default function BatchDetail() {
             <MapPin className="h-5 w-5 text-slate-500" /> Distribución Física
           </h2>
           <div className="space-y-3 text-sm">
-            {batch.batchStocks?.map((bs: any) => (
-              <div key={bs.warehouseId} className="flex justify-between border-b border-slate-100 pb-2">
+            {batch.batchStocks?.map((bs: { warehouseId?: string; warehouse?: { name: string }; quantity: number }) => (
+              <div key={bs.warehouseId || bs.warehouse?.name} className="flex justify-between border-b border-slate-100 pb-2">
                 <span className="text-slate-500">{bs.warehouse?.name}</span>
                 <span className="font-medium text-slate-900">{bs.quantity}</span>
               </div>

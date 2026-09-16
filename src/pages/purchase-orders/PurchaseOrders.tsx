@@ -1,47 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '../../components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../../components/ui/sheet';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../hooks/use-toast';
 
 export default function PurchaseOrders() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<{ id: string, createdAt: string, supplier: { name: string }, warehouse: { name: string }, status: string }[]>([]);
   const [filter, setFilter] = useState('ALL');
   const [isOpen, setIsOpen] = useState(false);
   
   // Create PO form state
   const [supplierId, setSupplierId] = useState('');
   const [warehouseId, setWarehouseId] = useState('');
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<{ productId: string, productName?: string, quantity: number, costPrice: number }[]>([]);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [costPrice, setCostPrice] = useState('');
 
   // Dropdown data
-  const [suppliers, setSuppliers] = useState<any[]>([]);
-  const [warehouses, setWarehouses] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+  const [suppliers, setSuppliers] = useState<{ id: string, name: string, isActive?: boolean }[]>([]);
+  const [warehouses, setWarehouses] = useState<{ id: string, name: string, isActive?: boolean }[]>([]);
+  const [products, setProducts] = useState<{ id: string, name: string, isActive?: boolean }[]>([]);
 
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchOrders();
-  }, [filter]);
-
-  useEffect(() => {
-    if (isOpen) {
-      axios.get('http://localhost:3000/suppliers').then(res => setSuppliers(res.data));
-      axios.get('http://localhost:3000/warehouses').then(res => setWarehouses(res.data));
-      axios.get('http://localhost:3000/products').then(res => setProducts(res.data));
-    }
-  }, [isOpen]);
 
   const fetchOrders = async () => {
     try {
@@ -59,22 +47,37 @@ export default function PurchaseOrders() {
       const { data } = await axios.get(url);
       
       if (filter === 'PENDING') {
-        setOrders(data.filter((o: any) => o.status === 'DRAFT' || o.status === 'SENT'));
+        setOrders(data.filter((o: { status: string }) => o.status === 'DRAFT' || o.status === 'SENT'));
       } else {
         setOrders(data);
       }
-    } catch (error) {
-      toast({ title: 'Error', description: 'Failed to fetch orders', variant: 'destructive' });
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast({ title: 'Error', description: 'Failed to fetch orders', variant: 'destructive' });
+      }
     }
   };
 
+  useEffect(() => {
+    fetchOrders();  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
+  useEffect(() => {
+    if (isOpen) {
+      axios.get('http://localhost:3000/suppliers').then(res => setSuppliers(res.data));
+      axios.get('http://localhost:3000/warehouses').then(res => setWarehouses(res.data));
+      axios.get('http://localhost:3000/products').then(res => setProducts(res.data));
+    }
+  }, [isOpen]);
+
   const addItem = () => {
     if (!selectedProduct || !quantity || !costPrice) return;
-    if (items.some(i => i.productId === selectedProduct)) {
+    if (items.some((i: { productId: string }) => i.productId === selectedProduct)) {
       toast({ title: 'Error', description: 'Product already added', variant: 'destructive' });
       return;
     }
-    const product = products.find(p => p.id === selectedProduct);
+    const product = products.find((p: { id: string, name: string }) => p.id === selectedProduct);
     setItems([...items, { 
       productId: selectedProduct, 
       productName: product?.name,
@@ -87,7 +90,7 @@ export default function PurchaseOrders() {
   };
 
   const removeItem = (productId: string) => {
-    setItems(items.filter(i => i.productId !== productId));
+    setItems(items.filter((i: { productId: string }) => i.productId !== productId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,7 +103,7 @@ export default function PurchaseOrders() {
       await axios.post('http://localhost:3000/purchase-orders', {
         supplierId,
         warehouseId,
-        items: items.map(({ productName, ...rest }) => rest)
+        items: items.map(({ productName: _unused, ...rest }: { productName?: string, productId: string, quantity: number, costPrice: number }) => rest) // eslint-disable-line @typescript-eslint/no-unused-vars
       });
       toast({ title: 'Success', description: 'Order created' });
       setIsOpen(false);
@@ -108,8 +111,10 @@ export default function PurchaseOrders() {
       setWarehouseId('');
       setItems([]);
       fetchOrders();
-    } catch (error) {
-      toast({ title: 'Error', description: 'Failed to create order', variant: 'destructive' });
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast({ title: 'Error', description: 'Failed to create order', variant: 'destructive' });
+      }
     }
   };
 
@@ -132,7 +137,7 @@ export default function PurchaseOrders() {
                   <Select value={supplierId} onValueChange={setSupplierId}>
                     <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
                     <SelectContent>
-                      {suppliers.filter(s => s.isActive).map(s => (
+                      {suppliers.filter((s: { isActive?: boolean }) => s.isActive).map((s: { id: string, name: string }) => (
                         <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -143,7 +148,7 @@ export default function PurchaseOrders() {
                   <Select value={warehouseId} onValueChange={setWarehouseId}>
                     <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
                     <SelectContent>
-                      {warehouses.filter(w => w.isActive).map(w => (
+                      {warehouses.filter((w: { isActive?: boolean }) => w.isActive).map((w: { id: string, name: string }) => (
                         <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -157,7 +162,7 @@ export default function PurchaseOrders() {
                   <Select value={selectedProduct} onValueChange={setSelectedProduct}>
                     <SelectTrigger><SelectValue placeholder="Producto" /></SelectTrigger>
                     <SelectContent>
-                      {products.filter(p => p.isActive).map(p => (
+                      {products.filter((p: { isActive?: boolean }) => p.isActive).map((p: { id: string, name: string }) => (
                         <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -179,7 +184,7 @@ export default function PurchaseOrders() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.map(i => (
+                    {items.map((i: { productId: string, productName?: string, quantity: number, costPrice: number }) => (
                       <TableRow key={i.productId}>
                         <TableCell>{i.productName}</TableCell>
                         <TableCell>{i.quantity}</TableCell>

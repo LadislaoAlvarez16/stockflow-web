@@ -3,27 +3,45 @@ import { Link } from 'react-router-dom';
 import { batchesApi } from '@/services/api';
 import { Package, Search, Calendar, AlertTriangle, Info, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
+import axios from 'axios';
+
+interface BatchStock {
+  warehouseId: string;
+  warehouse?: { name: string };
+  quantity: number;
+}
+
+interface Batch {
+  id: string;
+  batchNumber: string;
+  product?: { name: string };
+  expiryDate: string | null;
+  batchStocks: BatchStock[];
+}
 
 export default function Batches() {
-  const [batches, setBatches] = useState<any[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchBatches();
-  }, []);
+
 
   const fetchBatches = async () => {
     try {
       setIsLoading(true);
       const data = await batchesApi.getBatches();
       setBatches(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al cargar lotes');
+    } catch (err: unknown) {
+      setError(axios.isAxiosError(err) ? err.response?.data?.message || 'Error al cargar lotes' : 'Error al cargar lotes');
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchBatches();  
+     
+  }, []);
 
   const getExpiryBadge = (expiryDate: string | null) => {
     if (!expiryDate) return <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800">Sin vencimiento</span>;
@@ -113,7 +131,7 @@ export default function Batches() {
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
                       {batch.batchStocks && batch.batchStocks.length > 0 ? (
-                        batch.batchStocks.map((bs: any) => (
+                        batch.batchStocks.map((bs: BatchStock) => (
                           <div key={bs.warehouseId} className="text-xs">
                             <span className="font-medium text-slate-900">{bs.quantity}</span> en {bs.warehouse?.name}
                           </div>

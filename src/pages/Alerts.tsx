@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -45,10 +45,10 @@ export default function Alerts() {
   // Filtros desde URL
   const status = searchParams.get('status') || '';
 
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     setLoading(true);
     try {
-      const params: any = { page, limit: 20 };
+      const params: Record<string, string | number> = { page, limit: 20 };
       if (status) params.status = status;
 
       const res = await alertsApi.getAlerts(params);
@@ -59,12 +59,11 @@ export default function Alerts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, status]);
 
   useEffect(() => {
     fetchAlerts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, page]);
+  }, [fetchAlerts]);
 
   const updateStatusFilter = (newStatus: string) => {
     const newParams = new URLSearchParams(searchParams);
@@ -84,11 +83,12 @@ export default function Alerts() {
       setAlerts(prev => prev.map(a => 
         a.id === id ? { ...a, status: 'RESOLVED', resolvedAt: new Date().toISOString() } : a
       ));
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.response?.data?.message || 'No se pudo resolver la alerta.',
+        description: err.response?.data?.message || 'No se pudo resolver la alerta.',
       });
     }
   };

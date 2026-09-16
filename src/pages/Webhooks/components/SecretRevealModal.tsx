@@ -26,7 +26,7 @@ export const SecretRevealModal = ({ secret, isOpen, onClose }: SecretRevealModal
         title: "Copiado al portapapeles",
         description: "El secret ha sido copiado exitosamente.",
       })
-    } catch (err) {
+    } catch (_err: unknown) { // eslint-disable-line @typescript-eslint/no-unused-vars
       toast({
         variant: "destructive",
         title: "Error al copiar",

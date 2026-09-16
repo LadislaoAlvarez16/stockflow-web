@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { WebhookEvent } from '@/services/webhooks.service'
+import type { WebhookEvent } from '@/services/webhooks.service'
 import { Loader2 } from "lucide-react"
 
 interface CreateWebhookSheetProps {
@@ -34,6 +34,7 @@ export const CreateWebhookSheet = ({
   // Reset form when opened
   useEffect(() => {
     if (isOpen) {
+       
       setUrl('')
       setSelectedEvents([])
     }

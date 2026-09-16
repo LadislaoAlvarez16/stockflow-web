@@ -70,35 +70,35 @@ export const dashboardApi = {
 };
 
 export const stockApi = {
-  getStocks: (params?: any) => api.get('/stock', { params }).then(res => res.data),
+  getStocks: (params?: Record<string, unknown>) => api.get('/stock', { params }).then(res => res.data),
   getStockByBatch: (params?: { productId?: string; warehouseId?: string; batchId?: string; includeEmpty?: boolean }) => 
     api.get('/stock/by-batch', { params }).then(res => res.data),
   getFefoSuggestion: (params: { productId: string; warehouseId: string; quantity: number }) => 
     api.get('/stock/fefo-suggestion', { params }).then(res => res.data),
-  createMovement: (data: any) => api.post('/stock/movement', data).then(res => res.data),
-  createTransfer: (data: any) => api.post('/stock/transfer', data).then(res => res.data),
-  getMovements: (params?: any) => api.get('/stock/movements', { params }).then(res => res.data),
+  createMovement: (data: Record<string, unknown>) => api.post('/stock/movement', data).then(res => res.data),
+  createTransfer: (data: Record<string, unknown>) => api.post('/stock/transfer', data).then(res => res.data),
+  getMovements: (params?: Record<string, unknown>) => api.get('/stock/movements', { params }).then(res => res.data),
 };
 
 export const alertsApi = {
-  getAlerts: (params?: any) => api.get('/alerts', { params }).then(res => res.data),
+  getAlerts: (params?: Record<string, unknown>) => api.get('/alerts', { params }).then(res => res.data),
   resolveAlert: (id: string) => api.patch(`/alerts/${id}/resolve`).then(res => res.data),
 };
 
 export const warehousesApi = {
-  getWarehouses: (params?: any) => api.get('/warehouses', { params }).then(res => res.data),
-  createWarehouse: (data: any) => api.post('/warehouses', data).then(res => res.data),
+  getWarehouses: (params?: Record<string, unknown>) => api.get('/warehouses', { params }).then(res => res.data),
+  createWarehouse: (data: Record<string, unknown>) => api.post('/warehouses', data).then(res => res.data),
   deactivateWarehouse: (id: string) => api.patch(`/warehouses/${id}/deactivate`).then(res => res.data),
 };
 
 export const productsApi = {
-  getProducts: (params?: any) => api.get('/products', { params }).then(res => res.data),
-  createProduct: (data: any) => api.post('/products', data).then(res => res.data),
+  getProducts: (params?: Record<string, unknown>) => api.get('/products', { params }).then(res => res.data),
+  createProduct: (data: Record<string, unknown>) => api.post('/products', data).then(res => res.data),
   deactivateProduct: (id: string) => api.patch(`/products/${id}/deactivate`).then(res => res.data),
 };
 
 export const batchesApi = {
-  getBatches: (params?: any) => api.get('/batches', { params }).then(res => res.data),
+  getBatches: (params?: Record<string, unknown>) => api.get('/batches', { params }).then(res => res.data),
   getExpiringBatches: (daysThreshold?: number) => 
     api.get('/batches/expiring-soon', { params: { daysThreshold } }).then(res => res.data),
   getBatchDetails: (id: string) => api.get(`/batches/${id}`).then(res => res.data),
@@ -132,7 +132,7 @@ export const physicalInventoryApi = {
 
 export const reportsApi = {
   getDirectory: () => api.get('/reports').then(res => res.data),
-  downloadReport: async (url: string, params?: any) => {
+  downloadReport: async (url: string, params?: Record<string, unknown>) => {
     try {
       const response = await api.get(url, {
         params,
@@ -165,14 +165,14 @@ export const reportsApi = {
         window.URL.revokeObjectURL(objectUrl);
       }, 100);
       
-    } catch (error: any) {
-      if (error.response && error.response.data instanceof Blob) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response && error.response.data instanceof Blob) {
         // Parsear el Blob para leer el JSON de error
         const text = await error.response.data.text();
         try {
           const errorData = JSON.parse(text);
           error.response.data = errorData; // Inyectar el JSON de nuevo para que sea atrapado por el Toast o manejador
-        } catch (e) {
+        } catch {
           // Si no es JSON válido, no hacemos nada extra
         }
       }

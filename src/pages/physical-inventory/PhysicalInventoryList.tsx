@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { physicalInventoryApi } from '../../services/api';
 import { Button } from '../../components/ui/button';
@@ -8,9 +9,20 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { useNavigate } from 'react-router-dom';
 
 export default function PhysicalInventoryList() {
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<{ 
+    id: string; 
+    status: string; 
+    name?: string; 
+    createdAt: string; 
+    createdBy: string; 
+    warehouse?: { name?: string }; 
+    totalItems?: number; 
+    adjustedItems?: number; 
+    errorLog?: Record<string, unknown> 
+  }[]>([]);
+  
   const [loading, setLoading] = useState(true);
-  const [errorLogData, setErrorLogData] = useState<any | null>(null);
+  const [errorLogData, setErrorLogData] = useState<Record<string, unknown> | undefined | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -20,22 +32,25 @@ export default function PhysicalInventoryList() {
       setLoading(true);
       const data = await physicalInventoryApi.getSessions();
       setSessions(data);
-    } catch (err: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al cargar inventarios",
-        description: err.response?.data?.message || err.message,
-      });
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast({
+          variant: "destructive",
+          title: "Error al cargar sesiones",
+          description: err.message,
+        });
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSessions();
+    fetchSessions();  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleViewError = (errorLog: any) => {
+  const handleViewError = (errorLog: Record<string, unknown> | undefined) => {
     setErrorLogData(errorLog);
     setIsSheetOpen(true);
   };
@@ -47,12 +62,14 @@ export default function PhysicalInventoryList() {
         title: "Reporte Generado",
         description: "La descarga ha comenzado.",
       });
-    } catch (err: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al descargar",
-        description: err.response?.data?.message || err.message,
-      });
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast({
+          variant: "destructive",
+          title: "Error al descargar",
+          description: err.response?.data?.message || err.message,
+        });
+      }
     }
   };
 
@@ -110,7 +127,7 @@ export default function PhysicalInventoryList() {
                           Descargar PDF
                         </Button>
                       )}
-                      {s.status === 'completed_with_errors' && (
+                      {s.status === 'completed_with_errors' && s.errorLog && (
                         <Button variant="destructive" size="sm" onClick={() => handleViewError(s.errorLog)}>
                           Ver Errores
                         </Button>

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState } from 'react';
 import { productsApi } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
@@ -42,12 +43,14 @@ export default function ProductDrawer({ open, onOpenChange, onSuccess }: Product
       onSuccess();
       onOpenChange(false);
       setFormData({ sku: '', name: '', category: '', costPrice: '', minStock: '' });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
       toast({
         variant: 'destructive',
         title: 'Error al crear producto',
         description: error.response?.data?.message || 'Revisa los datos e intenta de nuevo.',
       });
+          }
     } finally {
       setLoading(false);
     }

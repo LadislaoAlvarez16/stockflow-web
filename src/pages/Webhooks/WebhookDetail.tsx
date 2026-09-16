@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Send, Activity, Clock, ServerCrash, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+
 
 export default function WebhookDetail() {
   const { id } = useParams<{ id: string }>();

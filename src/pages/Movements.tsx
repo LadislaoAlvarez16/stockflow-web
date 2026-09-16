@@ -65,7 +65,7 @@ export default function Movements() {
     else setLoadingMore(true);
 
     try {
-      const params: any = { limit: 50 };
+      const params: Record<string, string | number> = { limit: 50 };
       
       if (dateFromStr) {
         const date = new Date(dateFromStr);

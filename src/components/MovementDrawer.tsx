@@ -28,7 +28,7 @@ export function MovementDrawer({ isOpen, onClose, onSuccess, warehouses }: Movem
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [batches, setBatches] = useState<any[]>([]);
+  const [batches, setBatches] = useState<{ id: string, batchNumber: string, currentQuantity: number }[]>([]);
   const [fefoBatchId, setFefoBatchId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
@@ -95,7 +95,7 @@ export function MovementDrawer({ isOpen, onClose, onSuccess, warehouses }: Movem
 
     setLoading(true);
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         ...formData,
         quantity: Number(formData.quantity),
       };
@@ -109,11 +109,12 @@ export function MovementDrawer({ isOpen, onClose, onSuccess, warehouses }: Movem
       toast({ title: 'Éxito', description: 'Movimiento registrado correctamente.' });
       onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.response?.data?.message || 'Ocurrió un error al registrar el movimiento.',
+        description: err.response?.data?.message || 'Ocurrió un error al registrar el movimiento.',
       });
     } finally {
       setLoading(false);
