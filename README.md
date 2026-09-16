@@ -58,6 +58,12 @@ Separación estricta de responsabilidades (Separation of Concerns) para escalabi
 
 ---
 
+## 🔒 Consideraciones de Seguridad (Trade-offs)
+
+**Gestión de Sesión (TICKET-01):** Para facilitar la evaluación técnica y el despliegue de este MVP en entornos separados (headless), el Frontend utiliza temporalmente `localStorage` para almacenar los tokens JWT. Es importante destacar que el equipo es consciente de los riesgos de exposición a **XSS** que esto conlleva. La migración a una arquitectura de sesión segura basada en **Cookies `httpOnly`** está planificada como una actualización conjunta con el backend para la próxima fase de paso a producción.
+
+---
+
 ## 🚀 Guía de Inicio Rápido (Local)
 
 ### Requisitos previos
