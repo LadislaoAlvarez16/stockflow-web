@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/providers/AuthProvider';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PrivateRoute } from '@/components/PrivateRoute';
 import { Layout } from '@/components/Layout';
 import { Login } from '@/pages/Login';
@@ -28,35 +29,37 @@ import AuditLogs from '@/pages/AuditLogs';
 function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        
-        <Route element={<PrivateRoute />}>
-          <Route element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/stock" element={<Stock />} />
-            <Route path="/movements" element={<Movements />} />
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/warehouses" element={<Warehouses />} />
-            <Route path="/batches" element={<Batches />} />
-            <Route path="/batches/:id" element={<BatchDetail />} />
-            <Route path="/serial-numbers" element={<SerialNumbers />} />
-            <Route path="/physical-inventory" element={<PhysicalInventoryList />} />
-            <Route path="/physical-inventory/upload" element={<PhysicalInventoryUpload />} />
-            <Route path="/reports" element={<ReportsDashboard />} />
-            <Route path="/webhooks" element={<WebhooksList />} />
-            <Route path="/webhooks/:id" element={<WebhookDetail />} />
-            <Route path="/suppliers" element={<Suppliers />} />
-            <Route path="/purchase-orders" element={<PurchaseOrders />} />
-            <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
-            <Route path="/imports" element={<Imports />} />
-            <Route path="/audit-logs" element={<AuditLogs />} />
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          
+          <Route element={<PrivateRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/stock" element={<Stock />} />
+              <Route path="/movements" element={<Movements />} />
+              <Route path="/alerts" element={<Alerts />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/warehouses" element={<Warehouses />} />
+              <Route path="/batches" element={<Batches />} />
+              <Route path="/batches/:id" element={<BatchDetail />} />
+              <Route path="/serial-numbers" element={<SerialNumbers />} />
+              <Route path="/physical-inventory" element={<PhysicalInventoryList />} />
+              <Route path="/physical-inventory/upload" element={<PhysicalInventoryUpload />} />
+              <Route path="/reports" element={<ReportsDashboard />} />
+              <Route path="/webhooks" element={<WebhooksList />} />
+              <Route path="/webhooks/:id" element={<WebhookDetail />} />
+              <Route path="/suppliers" element={<Suppliers />} />
+              <Route path="/purchase-orders" element={<PurchaseOrders />} />
+              <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
+              <Route path="/imports" element={<Imports />} />
+              <Route path="/audit-logs" element={<AuditLogs />} />
+            </Route>
           </Route>
-        </Route>
 
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </ErrorBoundary>
       <Toaster />
     </AuthProvider>
   );
