@@ -98,6 +98,6 @@ Separación estricta de responsabilidades (Separation of Concerns) para escalabi
 ---
 
 ## 🗺️ Roadmap Frontend (Próximas Fases)
-- **Fase 2:** Implementación de la vista de "Carga Masiva (ETL)" para la importación por CSV arrastrando archivos (Drag & Drop).
+- **✅ Fase 2 (Completada):** Implementación de la vista de "Carga Masiva (ETL)" para la importación por CSV arrastrando archivos (Drag & Drop) y panel de Webhooks.
 - **Fase 3:** WebSockets/Server-Sent Events (SSE) para reflejar cambios de stock en el dashboard en tiempo real sin recargar.
 - **Fase 4:** Migración de llamadas de Axios simples a `TanStack Query` (React Query) para caché en memoria, deduplicación de requests y revalidación automática.
