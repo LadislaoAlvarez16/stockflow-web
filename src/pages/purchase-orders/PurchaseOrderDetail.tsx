@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { api } from '@/services/api';
 import { Button } from '../../components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../../components/ui/sheet';
@@ -22,7 +23,7 @@ export default function PurchaseOrderDetail() {
 
   const fetchOrder = async () => {
     try {
-      const { data } = await axios.get(`http://localhost:3000/purchase-orders/${id}`);
+      const { data } = await api.get(`/purchase-orders/${id}`);
       setOrder(data);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) toast({ title: 'Error', description: 'Failed to fetch order details', variant: 'destructive' });
@@ -58,7 +59,7 @@ export default function PurchaseOrderDetail() {
     }
 
     try {
-      await axios.patch(`http://localhost:3000/purchase-orders/${id}/receive`, {
+      await api.patch(`/purchase-orders/${id}/receive`, {
         warehouseId: order?.warehouse?.id,
         reference,
         items: itemsToReceive,

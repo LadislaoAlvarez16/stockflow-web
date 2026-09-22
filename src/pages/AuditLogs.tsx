@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { api } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '../hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -49,7 +49,7 @@ export default function AuditLogs() {
       if (userId) params.append('userId', userId);
       if (cursor) params.append('cursor', cursor);
 
-      const response = await axios.get(`http://localhost:3000/audit-logs?${params.toString()}`);
+      const response = await api.get(`/audit-logs?${params.toString()}`);
       
       const { data, nextCursor: newCursor } = response.data;
       
@@ -72,7 +72,7 @@ export default function AuditLogs() {
     const fetchInitial = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:3000/audit-logs?`);
+        const response = await api.get(`/audit-logs?`);
         if (isMounted) {
           setLogs(response.data.data);
           setNextCursor(response.data.nextCursor);

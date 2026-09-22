@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { api } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -25,7 +26,7 @@ export default function Suppliers() {
 
   const fetchSuppliers = async () => {
     try {
-      const { data } = await axios.get('http://localhost:3000/suppliers');
+      const { data } = await api.get('/suppliers');
       setSuppliers(data);
     } catch (_error: unknown) { // eslint-disable-line @typescript-eslint/no-unused-vars
       toast({ title: 'Error', description: 'Failed to fetch suppliers', variant: 'destructive' });
@@ -40,7 +41,7 @@ export default function Suppliers() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3000/suppliers', formData);
+      await api.post('/suppliers', formData);
       toast({ title: 'Success', description: 'Supplier created successfully' });
       setIsOpen(false);
       setFormData({ name: '', taxId: '', email: '', phone: '', address: '' });

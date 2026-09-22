@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { api } from '@/services/api';
 import { Button } from '../../components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../../components/ui/sheet';
@@ -33,7 +34,7 @@ export default function PurchaseOrders() {
 
   const fetchOrders = async () => {
     try {
-      let url = 'http://localhost:3000/purchase-orders';
+      let url = '/purchase-orders';
       // Mapeo simple de tabs a backend status
       if (filter === 'PENDING') {
         // Asumiendo que el backend soporta arrays o filtramos en memoria. Si no, hacemos 2 requests o filtramos.
@@ -44,7 +45,7 @@ export default function PurchaseOrders() {
         url += '?status=RECEIVED';
       }
       
-      const { data } = await axios.get(url);
+      const { data } = await api.get(url);
       
       if (filter === 'PENDING') {
         setOrders(data.filter((o: { status: string }) => o.status === 'DRAFT' || o.status === 'SENT'));
@@ -65,9 +66,9 @@ export default function PurchaseOrders() {
 
   useEffect(() => {
     if (isOpen) {
-      axios.get('http://localhost:3000/suppliers').then(res => setSuppliers(res.data));
-      axios.get('http://localhost:3000/warehouses').then(res => setWarehouses(res.data));
-      axios.get('http://localhost:3000/products').then(res => setProducts(res.data));
+      api.get('/suppliers').then(res => setSuppliers(res.data));
+      api.get('/warehouses').then(res => setWarehouses(res.data));
+      api.get('/products').then(res => setProducts(res.data));
     }
   }, [isOpen]);
 
@@ -100,7 +101,7 @@ export default function PurchaseOrders() {
       return;
     }
     try {
-      await axios.post('http://localhost:3000/purchase-orders', {
+      await api.post('/purchase-orders', {
         supplierId,
         warehouseId,
         items: items.map(({ productName: _unused, ...rest }: { productName?: string, productId: string, quantity: number, costPrice: number }) => rest) // eslint-disable-line @typescript-eslint/no-unused-vars

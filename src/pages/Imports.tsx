@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { api } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -40,7 +41,7 @@ export default function Imports() {
 
   useEffect(() => {
     if (importType === 'initial-stock') {
-      axios.get('http://localhost:3000/warehouses').then(res => setWarehouses(res.data));
+      api.get('/warehouses').then(res => setWarehouses(res.data));
     }
   }, [importType]);
 
@@ -65,7 +66,7 @@ export default function Imports() {
     setResult(null);
 
     try {
-      const { data } = await axios.post(`http://localhost:3000/imports/${importType}`, formData, {
+      const { data } = await api.post(`/imports/${importType}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
