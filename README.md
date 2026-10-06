@@ -2,9 +2,9 @@
 
 # StockFlow Web
 
-**Interfaz de usuario moderna y headless para el control de inventario de StockFlow.**
+**Interfaz web (SPA) para el sistema de control de inventario StockFlow, desacoplada del backend y conectada solo por API REST.**
 
-Proyecto de portfolio técnico — Aplicación frontend SPA construida con enfoque en resiliencia, seguridad (RBAC) y experiencia de usuario optimizada (Skeletons, optimización de red).
+Proyecto personal de portfolio técnico, construido para practicar autenticación con roles en el cliente, manejo de estado asíncrono y una experiencia de usuario fluida con React y TypeScript.
 
 [![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -12,7 +12,7 @@ Proyecto de portfolio técnico — Aplicación frontend SPA construida con enfoq
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-000000?style=flat&logo=shadcnui&logoColor=white)](https://ui.shadcn.com/)
 
-[Backend Repository](https://github.com/LadislaoAlvarez16/stockflow)
+[Repositorio del backend](https://github.com/LadislaoAlvarez16/stockflow)
 
 </div>
 
@@ -20,84 +20,113 @@ Proyecto de portfolio técnico — Aplicación frontend SPA construida con enfoq
 
 ## 🎯 ¿Qué es StockFlow Web?
 
-Es el cliente frontend del ecosistema StockFlow. Se conecta exclusivamente mediante API REST al backend central, demostrando una arquitectura verdaderamente **Headless**. 
-Está diseñado para ser la herramienta diaria de los operarios y administradores de una distribuidora, garantizando que la interfaz sea rápida, clara y estrictamente segura.
+Es el cliente web del ecosistema StockFlow. Se comunica con el backend **únicamente por API REST**, por lo que ambos proyectos están completamente desacoplados y pueden desplegarse por separado.
+
+Está pensado como la herramienta diaria de operarios y administradores de una distribuidora: rápida, clara y con permisos según el rol de cada usuario.
 
 ---
 
-## ✨ Características Principales (Fase 1)
+## 📸 Capturas
 
-- **Auth & Seguridad (RBAC UI):** Los componentes de la interfaz reaccionan criptográficamente al rol del usuario. Si un usuario es `VIEWER`, los botones de "Crear" o "Eliminar" ni siquiera se renderizan en el DOM, complementando la seguridad del backend.
-- **Intercepción de Tokens:** Autenticación fluida mediante un Interceptor de Axios que inyecta automáticamente el JWT Bearer en cada petición segura.
-- **Experiencia de Usuario (UX):** Uso de *Skeletons* de carga (shadcn/ui) para prevenir parpadeos feos mientras el cliente resuelve asincronía de la base de datos, logrando que la app se sienta instantánea.
-- **Dashboards y Catálogos:** Vistas analíticas de movimientos y tablas de administración de Productos/Depósitos.
+<!-- Agregá acá 3 o 4 capturas: login, dashboard, carga masiva (ETL) y panel de webhooks. -->
+<!-- Ejemplo: ![Dashboard](./docs/screenshots/dashboard.png) -->
 
 ---
 
-## 💻 Stack Tecnológico
+## ✨ Características
 
-| Tecnología | Rol en la arquitectura |
-|------------|------------------------|
-| **React + Vite** | Motor de renderizado SPA hiper-rápido con HMR en milisegundos. |
-| **TypeScript** | Strict mode activado. Tipado de extremo a extremo compartiendo las mismas interfaces de DTO del backend. |
-| **Tailwind CSS** | Sistema de diseño basado en utilidades, garantizando que el CSS final sea diminuto. |
-| **shadcn/ui** | Componentes headless accesibles y hermosos, permitiendo el control absoluto sobre el DOM y el estilo sin dependencias ocultas. |
-| **Axios** | Cliente HTTP robusto configurado con interceptores globales para inyección de JWT y captura centralizada de errores (HTTP 401/403). |
-| **React Router v6** | Enrutamiento declarativo del lado del cliente y protección de rutas privadas. |
-
----
-
-## 📁 Arquitectura del Cliente (Directorios)
-
-Separación estricta de responsabilidades (Separation of Concerns) para escalabilidad:
-
-- `/src/components` — Componentes reutilizables, UI core (botones, tablas, drawers) agnósticos de la lógica de negocio.
-- `/src/pages` — Vistas ruteables que orquestan el estado, llaman a los servicios y ensamblan los componentes.
-- `/src/services` — Capa de integración (`api.ts`). Aquí vive Axios y las firmas de las peticiones a la API externa.
-- `/src/common` — Contextos globales (AuthContext), hooks personalizados (`useAuth`) y utilidades.
+- **Interfaz según el rol (RBAC en UI):** los botones de acciones sensibles ("Crear", "Eliminar") no se renderizan para usuarios con rol `VIEWER`. Es una mejora de experiencia: la seguridad real la aplica el backend.
+- **Autenticación con JWT:** un interceptor de Axios agrega el token Bearer en cada petición protegida y centraliza el manejo de errores 401/403.
+- **Rutas protegidas:** React Router v6 con rutas privadas según el estado de sesión.
+- **Carga masiva (ETL):** importación de catálogos por CSV con arrastrar y soltar (drag & drop), conectada al motor de importación del backend.
+- **Panel de webhooks:** administración de los webhooks del backend desde la interfaz.
+- **Catálogos y movimientos:** tablas de administración de productos y depósitos, y vistas de movimientos de stock.
+- **Experiencia de carga:** *skeletons* (shadcn/ui) mientras se resuelven las peticiones, para evitar saltos visuales.
+- **Contenedor:** build multi-stage de Docker servido con nginx (fallback de SPA y headers de seguridad).
 
 ---
 
-## 🔒 Consideraciones de Seguridad (Trade-offs)
+## 💻 Stack
 
-**Gestión de Sesión (TICKET-01):** Para facilitar la evaluación técnica y el despliegue de este MVP en entornos separados (headless), el Frontend utiliza temporalmente `localStorage` para almacenar los tokens JWT. Es importante destacar que el equipo es consciente de los riesgos de exposición a **XSS** que esto conlleva. La migración a una arquitectura de sesión segura basada en **Cookies `httpOnly`** está planificada como una actualización conjunta con el backend para la próxima fase de paso a producción.
+| Tecnología | Rol |
+|------------|-----|
+| **React + Vite** | SPA con entorno de desarrollo rápido (HMR). |
+| **TypeScript** | Modo estricto. Tipos de las respuestas alineados con los DTO del backend. |
+| **Tailwind CSS** | Estilos basados en utilidades. |
+| **shadcn/ui** | Componentes accesibles, con el código dentro del proyecto para poder personalizarlos. |
+| **Axios** | Cliente HTTP con interceptores para JWT y errores 401/403. |
+| **React Router v6** | Enrutamiento del lado del cliente y rutas privadas. |
 
 ---
 
-## 🚀 Guía de Inicio Rápido (Local)
+## 📁 Estructura del proyecto
 
-### Requisitos previos
-- Node.js (v20+ recomendado).
-- El **Backend de StockFlow** levantado y corriendo localmente (por defecto en el puerto `3000`).
+- `/src/components`: componentes reutilizables de UI (botones, tablas, drawers), sin lógica de negocio.
+- `/src/pages`: vistas ruteables que orquestan el estado, llaman a los servicios y ensamblan los componentes.
+- `/src/services`: capa de integración con la API (`api.ts`), donde vive la configuración de Axios.
+- `/src/common`: contextos globales (`AuthContext`), hooks personalizados (`useAuth`) y utilidades.
 
-### Pasos de instalación
+---
 
-1. **Clonar el repositorio:**
+## 🔒 Decisión de seguridad conocida
+
+**Almacenamiento del token:** por ahora el frontend guarda el JWT en `localStorage`, para simplificar el desarrollo y la evaluación con frontend y backend en entornos separados. Esto expone el token a ataques **XSS**, y es un riesgo que asumo conscientemente en esta etapa.
+
+**Plan:** migrar a sesión basada en **cookies `httpOnly`**, como cambio coordinado entre frontend y backend, antes de cualquier uso en producción.
+
+---
+
+## 🧠 Qué aprendí
+
+- Separar la capa de integración (servicios) de las vistas y los componentes para mantener el código ordenado.
+- Centralizar autenticación y errores con interceptores en vez de repetir lógica en cada pantalla.
+- Que ocultar botones por rol mejora la experiencia, pero la autorización real tiene que vivir en el servidor.
+- Los compromisos de seguridad (como `localStorage` vs. cookies `httpOnly`) conviene documentarlos y planificarlos, no esconderlos.
+
+---
+
+## ⚠️ Estado
+
+Proyecto personal de aprendizaje: **todavía no está desplegado** y se ejecuta en local junto con el backend.
+
+---
+
+## 🚀 Inicio rápido (local)
+
+### Requisitos
+- Node.js v20+
+- El **backend de StockFlow** corriendo en local (por defecto en el puerto `3000`).
+
+### Pasos
+
+1. **Clonar el repositorio**
    ```bash
-   git clone https://github.com/tu-usuario/stockflow-web.git
+   git clone https://github.com/LadislaoAlvarez16/stockflow-web.git
    cd stockflow-web
    ```
 
-2. **Instalar dependencias:**
+2. **Instalar dependencias**
    ```bash
    npm install
    ```
 
-3. **Configurar el entorno:**
-   Crea un archivo `.env` en la raíz (si es necesario modificar el default de Vite):
+3. **Configurar el entorno** (opcional, si querés cambiar la URL por defecto)
    ```env
    VITE_API_URL=http://localhost:3000/api/v1
    ```
 
-4. **Levantar el servidor de desarrollo Vite:**
+4. **Levantar el servidor de desarrollo**
    ```bash
    npm run dev
    ```
-   La aplicación estará disponible instantáneamente en `http://localhost:5173`.
+   La aplicación queda disponible en `http://localhost:5173`.
 
 ---
 
-## 🗺️ Roadmap Frontend (Próximas Fases)
-- **✅ Fase 2 (Completada):** Implementación de la vista de "Carga Masiva (ETL)" para la importación por CSV arrastrando archivos (Drag & Drop) y panel de Webhooks.
-- **Fase 3:** WebSockets/Server-Sent Events (SSE) para reflejar cambios de stock en el dashboard en tiempo real sin recargar.
-- **Fase 4:** Migración de llamadas de Axios simples a `TanStack Query` (React Query) para caché en memoria, deduplicación de requests y revalidación automática.
+## 🗺️ Roadmap
+
+- ✅ **Fase 1:** autenticación, RBAC en UI, catálogos y movimientos.
+- ✅ **Fase 2:** carga masiva por CSV (drag & drop) y panel de webhooks.
+- **Fase 3:** actualizaciones en tiempo real con WebSockets o Server-Sent Events.
+- **Fase 4:** migración a TanStack Query (caché, deduplicación de requests y revalidación automática).
+- **Seguridad:** migración del token a cookies `httpOnly`.
